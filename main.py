@@ -14,7 +14,6 @@ def index():
         end_time = request.form["end"]
         resolution = request.form["resolution"]
 
-        # Convert time string to seconds
         def time_to_sec(t):
             h, m, s = map(int, t.split(":"))
             return h * 3600 + m * 60 + s
@@ -30,7 +29,8 @@ def index():
         yt_cmd = [
             "yt-dlp",
             "--download-sections", f"*{start_time}-{end_time}",
-            "-f", f"best[height<={resolution}]",
+            "-f", f"bestvideo[height<={resolution}]+bestaudio/best[height<={resolution}]/best",
+            "--recode-video", "mp4",
             "-o", output_path,
             url
         ]
@@ -38,8 +38,8 @@ def index():
         try:
             subprocess.run(yt_cmd, check=True)
             return redirect(url_for("download", filename=output_file))
-        except subprocess.CalledProcessError as e:
-            return f"Gagal download. Coba lagi. Error: {str(e)}"
+        except subprocess.CalledProcessError:
+            return "Gagal download. Coba lagi."
 
     return render_template("index.html")
 
@@ -49,5 +49,5 @@ def download(filename):
 
 if __name__ == "__main__":
     os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
-    port = int(os.environ.get("PORT", 5000))  # Untuk hosting (ex: Railway)
+    port = int(os.environ.get("PORT", 5000))  # PORT dari Railway
     app.run(debug=True, host="0.0.0.0", port=port)
