@@ -14,6 +14,7 @@ def index():
         end_time = request.form["end"]
         resolution = request.form["resolution"]
 
+        # Convert time string to seconds
         def time_to_sec(t):
             h, m, s = map(int, t.split(":"))
             return h * 3600 + m * 60 + s
@@ -48,5 +49,5 @@ def download(filename):
 
 if __name__ == "__main__":
     os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
-    port = int(os.environ.get("PORT", 5000))  # Railway akan inject PORT env
+    port = int(os.environ.get("PORT", 5000))  # Untuk hosting (ex: Railway)
     app.run(debug=True, host="0.0.0.0", port=port)
