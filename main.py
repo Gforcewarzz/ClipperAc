@@ -30,14 +30,14 @@ def index():
         output_path = os.path.join(DOWNLOAD_FOLDER, output_file)
 
         ydl_opts = {
-            "format": f"bestvideo[height<={resolution}]+bestaudio/best[height<={resolution}]/best",
-            "outtmpl": output_path,
-            "paths": {"home": DOWNLOAD_FOLDER},
-            "merge_output_format": "mp4",
-            "download_sections": [f"*{start_time}-{end_time}"],
-            "noplaylist": True,
-            "quiet": True,
-        }
+    "format": f"best[ext=mp4][height<={resolution}]",
+    "outtmpl": output_path,
+    "paths": {"home": DOWNLOAD_FOLDER},
+    "download_sections": [f"*{start_time}-{end_time}"],
+    "noplaylist": True,
+    "quiet": True,
+}
+
 
         try:
             with YoutubeDL(ydl_opts) as ydl:
