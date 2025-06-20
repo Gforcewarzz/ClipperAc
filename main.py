@@ -1,9 +1,11 @@
 from flask import Flask, render_template, request, send_from_directory, redirect, url_for
-import subprocess
+from yt_dlp import YoutubeDL
 import os
 import uuid
 
 app = Flask(__name__)
+
+# Railway hanya izinkan tulis ke /tmp
 DOWNLOAD_FOLDER = "/tmp/downloads"
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
@@ -21,25 +23,27 @@ def index():
 
         start_sec = time_to_sec(start_time)
         end_sec = time_to_sec(end_time)
-        duration = end_sec - start_sec
 
+        duration = end_sec - start_sec
         video_id = str(uuid.uuid4())[:8]
         output_file = f"{video_id}.mp4"
         output_path = os.path.join(DOWNLOAD_FOLDER, output_file)
 
-        yt_cmd = [
-            "yt-dlp",
-            "--download-sections", f"*{start_time}-{end_time}",
-            "-f", f"bestvideo[height<={resolution}]+bestaudio/best[height<={resolution}]/best",
-            "--recode-video", "mp4",
-            "-o", output_path,
-            url
-        ]
+        ydl_opts = {
+            "format": f"bestvideo[height<={resolution}]+bestaudio/best[height<={resolution}]/best",
+            "outtmpl": output_path,
+            "paths": {"home": DOWNLOAD_FOLDER},
+            "merge_output_format": "mp4",
+            "download_sections": [f"*{start_time}-{end_time}"],
+            "noplaylist": True,
+            "quiet": True,
+        }
 
         try:
-            subprocess.run(yt_cmd, check=True)
+            with YoutubeDL(ydl_opts) as ydl:
+                ydl.download([url])
             return redirect(url_for("download", filename=output_file))
-        except subprocess.CalledProcessError as e:
+        except Exception as e:
             return f"Gagal download. Coba lagi. Error: {e}"
 
     return render_template("index.html")
