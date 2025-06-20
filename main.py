@@ -4,7 +4,8 @@ import os
 import uuid
 
 app = Flask(__name__)
-DOWNLOAD_FOLDER = "downloads"
+DOWNLOAD_FOLDER = "/tmp/downloads"
+os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -38,8 +39,8 @@ def index():
         try:
             subprocess.run(yt_cmd, check=True)
             return redirect(url_for("download", filename=output_file))
-        except subprocess.CalledProcessError:
-            return "Gagal download. Coba lagi."
+        except subprocess.CalledProcessError as e:
+            return f"Gagal download. Coba lagi. Error: {e}"
 
     return render_template("index.html")
 
@@ -48,6 +49,5 @@ def download(filename):
     return send_from_directory(DOWNLOAD_FOLDER, filename, as_attachment=True)
 
 if __name__ == "__main__":
-    os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
-    port = int(os.environ.get("PORT", 5000))  # PORT dari Railway
+    port = int(os.environ.get("PORT", 5000))
     app.run(debug=True, host="0.0.0.0", port=port)
